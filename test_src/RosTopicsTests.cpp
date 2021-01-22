@@ -1,0 +1,76 @@
+#include <catch.hpp>
+
+#include <limits>
+#include <RosTopics.hpp>
+
+#define testOneObject(objectData, description, result)	{ 																		\
+													SECTION( (description) ) 											\
+													{ 																	\
+														zed_interfaces::Objects objects;											\
+														std::vector<zed_interfaces::ObjectStamped> objectsVector;						\
+														objectsVector.push_back( (objectData) );						\
+														objects.objects = objectsVector;							\										
+														REQUIRE(RT::checkIfObjectAreCloseToCamera(objects) == (result));	\
+													}																	\
+												}
+
+TEST_CASE("checkIfObjectAreCloseToCamera()", "[RosTopic]")
+{	
+//	bool checkIfObjectAreCloseToCamera(const zed_interfaces::Objects& objects)
+	
+	zed_interfaces::ObjectStamped closestObject;
+	closestObject.position.z = 0.0;
+	
+	zed_interfaces::ObjectStamped farestObject;
+	farestObject.position.z = std::numeric_limits<float>::max();
+	
+	zed_interfaces::ObjectStamped closerThanDistanceLimitObject;
+	closerThanDistanceLimitObject.position.z = MD::getDistanceParameter() - 0.5;
+	
+	zed_interfaces::ObjectStamped minimallyCloserThanDistanceLimitObject;
+	minimallyCloserThanDistanceLimitObject.position.z = MD::getDistanceParameter() - 0.000000000000000000001;
+	
+	zed_interfaces::ObjectStamped fartherThanDistanceLimitObject;
+	fartherThanDistanceLimitObject.position.z = MD::getDistanceParameter() + 0.5;
+	
+	zed_interfaces::ObjectStamped atDistanceLimitObject;
+	atDistanceLimitObject.position.z = MD::getDistanceParameter();
+	
+	testOneObject(closestObject, "send closest object", true)
+	testOneObject(farestObject, "send farest object", false)
+	testOneObject(closerThanDistanceLimitObject, "send object which is closer than distance limit", true)
+	testOneObject(minimallyCloserThanDistanceLimitObject, "send object which is minimally closer than distance limit", true)
+	testOneObject(fartherThanDistanceLimitObject, "send object which is farther than distance limit", false)
+	testOneObject(atDistanceLimitObject, "send object which is at distance limit", true)
+	
+	SECTION( "send two object which are closer than maximum distance" ) 											
+	{ 																	
+		zed_interfaces::Objects objects;											
+		std::vector<zed_interfaces::ObjectStamped> objectsVector;						
+		objectsVector.push_back( closestObject );									
+		objectsVector.push_back( closerThanDistanceLimitObject );						
+		objects.objects = objectsVector;															
+		REQUIRE(RT::checkIfObjectAreCloseToCamera(objects) == true);	
+	}	
+	
+	SECTION( "send two object which are farther than maximum distance" ) 											
+	{ 																	
+		zed_interfaces::Objects objects;											
+		std::vector<zed_interfaces::ObjectStamped> objectsVector;						
+		objectsVector.push_back( farestObject );									
+		objectsVector.push_back( fartherThanDistanceLimitObject );						
+		objects.objects = objectsVector;															
+		REQUIRE(RT::checkIfObjectAreCloseToCamera(objects) == false);	
+	}	
+	
+	SECTION( "send more objects where at least one is closer than maximum distance" ) 											
+	{ 																	
+		zed_interfaces::Objects objects;											
+		std::vector<zed_interfaces::ObjectStamped> objectsVector;						
+		objectsVector.push_back( farestObject );									
+		objectsVector.push_back( fartherThanDistanceLimitObject );				
+		objectsVector.push_back( closerThanDistanceLimitObject );						
+		objects.objects = objectsVector;															
+		REQUIRE(RT::checkIfObjectAreCloseToCamera(objects) == true);	
+	}	
+}
