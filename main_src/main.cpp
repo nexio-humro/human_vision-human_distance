@@ -6,8 +6,8 @@
 
 int main(int argc, char **argv) 
 {
-	ros::init(argc, argv, "human_detection");
-	ros::NodeHandle node("/human_detection/");
+	ros::init(argc, argv, "human_distance");
+	ros::NodeHandle node("/human_distance/");
 	
 	ros::Subscriber objectsGetter = node.subscribe("/zed2/zed_node/obj_det/objects", 1000, RT::grab_objects);
 	MD::setClientPresentPublisher(node, "isClientPresent");
