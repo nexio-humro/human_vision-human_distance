@@ -11,13 +11,13 @@ namespace
 
 namespace RT
 {
-	bool checkIfObjectAreCloseToCamera(const zed_interfaces::Objects& objects)
+	bool checkIfObjectAreCloseToCamera(const human_vision_exchange::Objects& objects)
 	{
 		bool result = false;
 		
 		for(size_t i = 0; i < objects.objects.size(); i++)
 		{
-			if(objects.objects[i].position.z <= MD::getDistanceParameter())
+			if( (objects.objects[i].position.z <= MD::getDistanceParameter()) && (objects.objects[i].tracking_state == 1) )
 			{
 				result = true;
 			}
@@ -26,7 +26,7 @@ namespace RT
 		return result;
 	}
 	
-	bool checkIfDifferenceBetweenIteretionsIsOk(ros::Time presentIterationTime)
+	bool checkIfDifferenceBetweenIterationsIsOk(ros::Time presentIterationTime)
 	{
 		bool result = false;
 		
@@ -56,7 +56,7 @@ namespace RT
 		return result;
 	}
 	
-	void grab_objects(const zed_interfaces::Objects& objects)
+	void grab_objects(const human_vision_exchange::Objects& objects)
 	{
 		bool isPresent = false;
 		
@@ -64,7 +64,7 @@ namespace RT
 		
 		if(objectIsClose == true)
 		{
-			bool differenceBetweenIterationsOk = checkIfDifferenceBetweenIteretionsIsOk(objects.objects[0].header.stamp);
+			bool differenceBetweenIterationsOk = checkIfDifferenceBetweenIterationsIsOk(objects.objects[0].header.stamp);
 			
 			if(differenceBetweenIterationsOk == true)
 			{
@@ -96,9 +96,8 @@ namespace RT
 		if(objects.objects.size() > 0)
 		{
 			previousIterationTime = objects.objects[0].header.stamp;
+//			std::cout<<"RT::grab_objects(): tracking_state = "<<objects.objects[0].tracking_state<<std::endl;
 		}
-		
-//		std::cout<<"grab_objects():isPresent = "<<isPresent<<", distanceVerificationActivated = "<<distanceVerificationActivated<<", objectIsClose = "<<objectIsClose<<std::endl;
 		
 		std_msgs::Bool msg;
         msg.data = isPresent;

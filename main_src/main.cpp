@@ -9,7 +9,7 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "human_distance");
 	ros::NodeHandle node("/human_distance/");
 	
-	ros::Subscriber objectsGetter = node.subscribe("/zed2/zed_node/obj_det/objects", 1000, RT::grab_objects);
+	ros::Subscriber objectsGetter = node.subscribe("/human_zed_talker/objects", 1000, RT::grab_objects);
 	MD::setClientPresentPublisher(node, "isClientPresent");
 	
 	ros::spin();
